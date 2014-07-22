@@ -30,19 +30,10 @@
     <ClInclude Include="GeoUtility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GridSimplifier.h">
+    <ClInclude Include="GridSimplifierM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GridTree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NaiveSimplifier.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="QuadTree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VWSimplifier.h">
+    <ClInclude Include="GridTreeM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,22 +44,13 @@
     <ClCompile Include="FileIO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GridSimplifier.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GridTree.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NaiveSimplifier.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="QuadTree.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Simplify.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VWSimlifier.cpp">
+    <ClCompile Include="GridSimplifierM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GridTreeM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

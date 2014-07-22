@@ -40,58 +40,39 @@ struct Line
 	long id;
 	int kept = 0;
 	bool cycle;
+	bool share;
 	//concurrency::concurrent_vector<Point*> points;
 	vector<Point*> points;
-	vector<int> shareEnd11;
-	vector<int> shareEnd12;
-	vector<int> shareEnd21;
-	vector<int> shareEnd22;
-	vector<int> shareEnd;
-
-	/*~Line(){
-		delete shareEnd11;
-		delete shareEnd12;
-		delete shareEnd21;
-		delete shareEnd22;
-		delete shareEnd;
-		for (int i = 0; i < points.size(); ++i)
-			delete points[i];
-	}*/
 };
 
-struct LineSet
+struct LineSetM
 {
+	const static int threadN = 4;
 	const char* gmlLineString = ":<gml:LineString srsName=\"EPSG:54004\" xmlns:gml=\"http://www.opengis.net/gml\">";
 	const char* gmlCoordinates = "<gml:coordinates decimal=\".\" cs=\",\" ts=\" \">";
 	const char* endCoordinates = "</gml:coordinates>";
 	const char* endLineString = "</gml:LineString>";
-	vector<Line*> lines;
-	double minX;
-	double maxX;
-	double minY;
-	double maxY;
+	vector<Line*> lines[threadN];
+	int num_points[threadN];
+	double minXs[threadN];
+	double maxXs[threadN];
+	double minYs[threadN];
+	double maxYs[threadN];
 
-	void getShare(){ //scan sharing endpoint information, find 2-polyline-cycle
-		for (int i = 0; i < lines.size(); ++i){
-			for (int j = 0; j < lines[i]->shareEnd11.size(); ++j){
-				for (int k = 0; k < lines[i]->shareEnd22.size(); ++k){
-					if (lines[i]->shareEnd11[j] == lines[i]->shareEnd22[k])
-						lines[i]->shareEnd.push_back(lines[i]->shareEnd11[j]);
-				}
-			}
-			for (int j = 0; j < lines[i]->shareEnd12.size(); ++j){
-				for (int k = 0; k < lines[i]->shareEnd21.size(); ++k){
-					if (lines[i]->shareEnd12[j] == lines[i]->shareEnd21[k])
-						lines[i]->shareEnd.push_back(lines[i]->shareEnd12[j]);
-				}
-			}
+	double minx, maxx, miny, maxy;
+
+
+	int linesNumber()
+	{
+		int sum = 0;
+		for (int i = 0; i < threadN; i++){
+			sum += lines[i].size();
 		}
+		return sum;
 	}
-	/*~LineSet(){
-		for (int i = 0; i < lines.size(); ++i)
-			delete lines[i];
-	}*/
 };
+
+
 
 struct Rect
 {
@@ -116,8 +97,8 @@ struct Triangle
 	Triangle(){}
 	Triangle(Point* P1, Point* P2, Point* P3){
 		p[0] = P1;
-		p[1] = P2; 
-		p[2] = P3; 
+		p[1] = P2;
+		p[2] = P3;
 		sort();
 	}
 	double maxX;
@@ -192,26 +173,117 @@ struct Triangle
 	}
 	//whether a point is in this triangle
 	inline bool isInTri(const double& x, const double& y) const {
+
+		//if (x > maxX || x<minX || y>maxY || y<minY)
+		//	return false;
+		
 		double prod1 = (x - p[1]->x)*(p[0]->y - y) - (x - p[0]->x)*(p[1]->y - y);
 		double prod2 = (x - p[2]->x)*(p[0]->y - y) - (x - p[0]->x)*(p[2]->y - y);
-		if (prod1 > 0 == prod2 > 0)
-			if((prod1 != 0) == (prod2 != 0))
-				return false;
-			else{
-				if ((x - p[2]->x)*(p[1]->y - y) == (x - p[1]->x)*(p[2]->y - y))
-					return false;
-				else
-					return true;
-			}
+		
+		if (prod1 > 0 && prod2 > 0 || prod1 < 0 && prod2 < 0 || prod1 == 0 && prod2 == 0)
+			return false;
 		else{
 			double prod3 = (x - p[2]->x)*(p[1]->y - y) - (x - p[1]->x)*(p[2]->y - y);
-			return prod2 > 0 != prod3 > 0 && (prod1 != 0 || prod3 != 0); // XOR used as !=
+			if (prod3 == 0)
+				return prod1 != 0 && prod2 != 0;
+			if (prod2 > 0 && prod3 > 0 || prod2 < 0 && prod3 < 0)
+				return false;
+			if (prod2 != 0)
+				return true;
+			else
+				return prod1 < 0 && prod3 < 0 || prod1 > 0 && prod3 > 0;
 		}
-		/*if (x <= minX || x >= maxX || y <= minY || y >= maxY){
+		
+	}
+};
+
+struct Polygon{
+	int size;
+	Point** p;
+	Polygon(){}
+	Polygon(int Size, Point** points){
+		size = Size;
+		p = points;
+	}
+	double maxX;
+	double minX;
+	double maxY;
+	double minY;
+
+	inline void getRange(){
+		minX = maxX = p[0]->x;
+		minY = maxY = p[0]->y;
+		for (int i = 1; i < size; ++i){
+			if (minX > p[i]->x)
+				minX = p[i]->x;
+			if (maxX < p[i]->x)
+				maxX = p[i]->x;
+			if (minY > p[i]->y)
+				minY = p[i]->y;
+			if (maxY < p[i]->y)
+				maxY = p[i]->y;
+		}
+	}
+	inline bool isInPolygon(const double& x, const double& y) const{
+		if (x < minX || x > maxX || y < minY || y > maxY)
 			return false;
+		double count = 0;
+		if (p[0]->x == x && p[0]->y == y)
+			return false;
+		for (int i = 0; i < size; ++i){
+			int next = (i + 1) % size;
+			if (p[next]->x == x && p[next]->y == y)
+				return false;
+			if (p[i]->y == p[next]->y){
+				if (p[i]->y == y && p[i]->x < x != p[next]->x < x)
+					return true;
+				else
+					continue;
+			}
+			else if (p[i]->y < p[next]->y){
+				if (p[i]->y > y || p[next]->y < y)
+					continue;
+				else if (p[i]->y == y && p[i]->x > x || p[next]->y == y && p[next]->x > x){
+					count += 0.5;
+					continue;
+				}
+			}
+			else{
+				if (p[i]->y < y || p[next]->y > y)
+					continue;
+				else if (p[i]->y == y && p[i]->x > x || p[next]->y == y && p[next]->x > x){
+					count -= 0.5;
+					continue;
+				}
+			}
+			if (p[i]->x < p[next]->x){
+				if (p[next]->x < x)
+					continue;
+				else if (p[i]->x > x){
+					++count;
+					continue;
+				}
+			}
+			else{
+				if (p[i]->x < x)
+					continue;
+				else if (p[next]->x > x){
+					++count;
+					continue;
+				}
+			}
+			double intersect = (p[next]->x*p[i]->y - p[next]->x*y - p[i]->x*p[next]->y + p[i]->x*y) / (p[i]->y - p[next]->y);
+			if (intersect == x)
+				return true;
+			else if (intersect < x)
+				continue;
+			else
+				++count;
 		}
+		if (int(count) % 2 == 0)
+			return false;
 		else
-			return true;*/
+			return true;
 	}
 };
 
