@@ -2,7 +2,8 @@
 #define _GEOUTILITY_H_
 
 #include <vector>
-#include <concurrent_vector.h>
+#include <algorithm>
+#include <thread>
 using namespace std;
 
 struct Point
@@ -47,17 +48,18 @@ struct Line
 
 struct LineSetM
 {
-	const static int threadN = 4;
+	int threadN = thread::hardware_concurrency();
+	//int threadN = 8;
 	const char* gmlLineString = ":<gml:LineString srsName=\"EPSG:54004\" xmlns:gml=\"http://www.opengis.net/gml\">";
 	const char* gmlCoordinates = "<gml:coordinates decimal=\".\" cs=\",\" ts=\" \">";
 	const char* endCoordinates = "</gml:coordinates>";
 	const char* endLineString = "</gml:LineString>";
-	vector<Line*> lines[threadN];
-	int num_points[threadN];
-	double minXs[threadN];
-	double maxXs[threadN];
-	double minYs[threadN];
-	double maxYs[threadN];
+	vector<Line*>* lines = new vector<Line*>[threadN];
+	int* num_points = new int[threadN];
+	double* minXs = new double[threadN];
+	double* maxXs = new double[threadN];
+	double* minYs = new double[threadN];
+	double* maxYs = new double[threadN];
 
 	double minx, maxx, miny, maxy;
 
@@ -71,8 +73,6 @@ struct LineSetM
 		return sum;
 	}
 };
-
-
 
 struct Rect
 {
@@ -216,11 +216,11 @@ struct Polygon{
 		for (int i = 1; i < size; ++i){
 			if (minX > p[i]->x)
 				minX = p[i]->x;
-			if (maxX < p[i]->x)
+			else if (maxX < p[i]->x)
 				maxX = p[i]->x;
 			if (minY > p[i]->y)
 				minY = p[i]->y;
-			if (maxY < p[i]->y)
+			else if (maxY < p[i]->y)
 				maxY = p[i]->y;
 		}
 	}

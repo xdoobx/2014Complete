@@ -13,19 +13,17 @@ public:
 	double gridW;
 	int divideH;
 	double gridH;
-	const static int threadN = 4;// the number of useful threads. Here we set a fixed value. But later we should automatically set it based on the CPU.
+	int threadN;// the number of useful threads. Here we set a fixed value. But later we should automatically set it based on the CPU.
 
-	//vector<Point*> gridM[40][40][threadN];
 	vector<Point*>*** gridM;
 
 	//vector<Point*> gridM[100][100];
 
-	int sizes[5];
+	int* sizes;
 
 	//GridTreeM(LineSet* map, PointSet* points); //construct grid index with endpoints and constraint points
 
 	GridTreeM(LineSetM* map, PointSet* points); //construct grid index with endpoints and constraint points
-	int InferGridNumber(int lineN);
 	inline void insertLines(vector<Line*> lines, int threadId);
 	inline const Point* insertM(Point* point, int tid);
 	virtual inline bool hasPointInTri(const Triangle* triangle);

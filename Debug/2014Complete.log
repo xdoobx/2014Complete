@@ -1,24 +1,10 @@
-﻿Build started 7/22/2014 6:22:44 PM.
+﻿Build started 7/27/2014 2:13:30 PM.
      1>Project "D:\PittCourseSemester2\SummerKarimi\sigspatial\2014Complete\2014Complete\2014Complete.vcxproj" on node 2 (Build target(s)).
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(381,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (2014Complete.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-     1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\Simplify.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt FileIO.cpp
-         FileIO.cpp
-     1>d:\pittcoursesemester2\summerkarimi\sigspatial\2014complete\2014complete\fileio.cpp(115): warning C4244: 'initializing' : conversion from 'std::streamoff' to 'int', possible loss of data
-     1>d:\pittcoursesemester2\summerkarimi\sigspatial\2014complete\2014complete\fileio.cpp(113): warning C4101: 'strpos' : unreferenced local variable
-     1>d:\pittcoursesemester2\summerkarimi\sigspatial\2014complete\2014complete\fileio.cpp(114): warning C4101: 'firstp' : unreferenced local variable
-     1>d:\pittcoursesemester2\summerkarimi\sigspatial\2014complete\2014complete\fileio.cpp(170): warning C4244: 'argument' : conversion from 'std::streamoff' to 'unsigned int', possible loss of data
-     1>d:\pittcoursesemester2\summerkarimi\sigspatial\2014complete\2014complete\fileio.cpp(271): warning C4018: '<' : signed/unsigned mismatch
-     1>d:\pittcoursesemester2\summerkarimi\sigspatial\2014complete\2014complete\fileio.cpp(276): warning C4018: '<' : signed/unsigned mismatch
-       Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\PittCourseSemester2\SummerKarimi\sigspatial\2014Complete\Debug\Simplify.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:\PittCourseSemester2\SummerKarimi\sigspatial\2014Complete\Debug\Simplify.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\PittCourseSemester2\SummerKarimi\sigspatial\2014Complete\Debug\Simplify.lib" /MACHINE:X86 Debug\FileIO.obj
-         Debug\GridSimplifierM.obj
-         Debug\GridTreeM.obj
-         Debug\Simplify.obj
-         Debug\stdafx.obj
+     1>Link:
          2014Complete.vcxproj -> D:\PittCourseSemester2\SummerKarimi\sigspatial\2014Complete\Debug\Simplify.exe
      1>Done Building Project "D:\PittCourseSemester2\SummerKarimi\sigspatial\2014Complete\2014Complete\2014Complete.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:01.06
+Time Elapsed 00:00:00.05

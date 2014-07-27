@@ -107,7 +107,7 @@ void readLinesT(LineSetM* map, char *pData, char* endMark, int threadID)
 }
 
 //threadN is the maximal number of threads.
-LineSetM* readLinesM(string filename, const int threadN)
+LineSetM* readLinesM(string filename)
 {
 	ifstream fin(filename, std::ios::binary | std::ios::ate);
 	char* strpos;
@@ -120,27 +120,23 @@ LineSetM* readLinesM(string filename, const int threadN)
 	pdata[length - 1] = '\0';
 	fin.close();
 
-	int quaterLen = length / threadN;
-
 	LineSetM* map = new LineSetM();
 
+	int threadN = map->threadN;
 
-	thread t0(readLinesT, map, pdata, pdata + quaterLen, 0);
-	thread t1(readLinesT, map, pdata + quaterLen, pdata + 2 * quaterLen, 1);
-	thread t2(readLinesT, map, pdata + 2 * quaterLen, pdata + 3 * quaterLen, 2);
-	thread t3(readLinesT, map, pdata + 3 * quaterLen, pdata + length - 1, 3);
+	int quaterLen = length / threadN;
 
-	t0.join();
-	t1.join();
-	t2.join();
-	t3.join();
+	thread* t = new thread[threadN];
+	for (int i = 0; i < threadN-1; ++i)
+		t[i] = thread(readLinesT, map, pdata + i * quaterLen, pdata + (i + 1) * quaterLen, i);
+	t[threadN - 1] = thread(readLinesT, map, pdata + (threadN - 1) * quaterLen, pdata + length - 1, threadN - 1);
+	for (int i = 0; i < threadN; ++i)
+		t[i].join();
 
-	if (map->lines[3][0]->id == map->lines[2][0]->id)
-		map->lines[3].clear();
-	if (map->lines[2][0]->id == map->lines[1][0]->id)
-		map->lines[2].clear();
-	if (map->lines[1][0]->id == map->lines[0][0]->id)
-		map->lines[1].clear();
+	for (int i = threadN - 1; i > 0; --i){
+		if (map->lines[i][0]->id == map->lines[i - 1][0]->id)
+			map->lines[i].clear();
+	}
 
 	map->minx = map->minXs[0];
 	map->maxx = map->maxXs[0];
@@ -265,18 +261,17 @@ void writeLinesM(LineSetM* map, string filename, int length)
 	char* output = new char[length];
 	int pos = 0;
 	int ind = 0;
-	for (int k = 0; k < 4; k++)
+	for (int k = 0; k < map->threadN; k++)
 	{
-		vector<Line*> lines = map->lines[k];
-		for (int i = 0; i < lines.size(); ++i){
-			combine(output, pos, lines[i]->id);
+		for (int i = 0; i < map->lines[k].size(); ++i){
+			combine(output, pos, map->lines[k][i]->id);
 			combine(output, pos, map->gmlLineString, 77);
 			combine(output, pos, map->gmlCoordinates, 43);
 			ind = 0;
-			while (ind < lines[i]->points.size()){
-				combine(output, pos, lines[i]->points[ind]->x, ',');
-				combine(output, pos, lines[i]->points[ind]->y, ' ');
-				ind = lines[i]->points[ind]->rightInd;
+			while (ind < map->lines[k][i]->points.size()){
+				combine(output, pos, map->lines[k][i]->points[ind]->x, ',');
+				combine(output, pos, map->lines[k][i]->points[ind]->y, ' ');
+				ind = map->lines[k][i]->points[ind]->rightInd;
 			}
 			combine(output, pos, map->endCoordinates, 18);
 			combine(output, pos, map->endLineString, 17);

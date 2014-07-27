@@ -13,16 +13,10 @@ void GridTreeM::insertLines(vector<Line*> lines, int threadId){
 	}
 }
 
-int GridTreeM::InferGridNumber(int lineN)
-{
-	int gridRow = 4 * lineN;
-	return sqrt(gridRow);
-}
-
-
 GridTreeM::GridTreeM(LineSetM* map, PointSet* points){
 	range = Rect(map->minx - 0.1, map->maxx + 0.1, map->miny - 0.1, map->maxy + 0.1);
-
+	threadN = map->threadN;
+	sizes = new int[threadN];
 	int num_point = 0;
 	for (int i = 0; i < map->threadN; ++i){
 		num_point += map->num_points[i];
@@ -33,7 +27,7 @@ GridTreeM::GridTreeM(LineSetM* map, PointSet* points){
 	gridW = (range.maxX - range.minX) / divideW;
 	gridH = (range.maxY - range.minY) / divideH;
 
-	for (int i = 0; i <= threadN; i++)
+	for (int i = 0; i < threadN; i++)
 		sizes[i] = 0;
 
 	gridM = new vector<Point*>**[divideH];
@@ -42,7 +36,7 @@ GridTreeM::GridTreeM(LineSetM* map, PointSet* points){
 		gridM[i] = new vector<Point*>*[divideW];
 
 		for (int j = 0; j < divideW; j++)
-			gridM[i][j] = new vector<Point*>[5];
+			gridM[i][j] = new vector<Point*>[threadN + 1];
 	}
 
 	//insert the points
@@ -50,15 +44,11 @@ GridTreeM::GridTreeM(LineSetM* map, PointSet* points){
 		insertM(points->points[i], 0);
 
 	//insert the lines in parallel
-	thread t0(&GridTreeM::insertLines, this, map->lines[0], 0);
-	thread t1(&GridTreeM::insertLines, this, map->lines[1], 1);
-	thread t2(&GridTreeM::insertLines, this, map->lines[2], 2);
-	thread t3(&GridTreeM::insertLines, this, map->lines[3], 3);
-
-	t0.join();
-	t1.join();
-	t2.join();
-	t3.join();
+	thread* t = new thread[threadN];
+	for (int i = 0; i < threadN; ++i)
+		t[i] = thread(&GridTreeM::insertLines, this, map->lines[i], i);
+	for (int i = 0; i < threadN; ++i)
+		t[i].join();
 
 	for (int i = 0; i < threadN; i++){
 		for (int j = 0; j < map->lines[i].size(); ++j){
@@ -161,7 +151,7 @@ void GridTreeM::PointsInPoly(const Polygon* polygon, vector<Point*>& p){
 int GridTreeM::pointNumber()
 {
 	int sum = 0;
-	for (int i = 0; i < threadN + 1; i++)
+	for (int i = 0; i < threadN; i++)
 	{
 		sum += sizes[i];
 	}
