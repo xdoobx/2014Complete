@@ -234,7 +234,7 @@ void combine(char* output, int& pos, long id){
 		output[pos++] = '0';
 		return;
 	}
-	int p = 10000; //limitation, id should not be larger than 10000
+	int p = 10000; //limitation, id should not be larger than 100000
 	int digit;
 	while (id / p < 1)
 		p /= 10;

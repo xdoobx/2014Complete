@@ -21,9 +21,10 @@ GridTreeM::GridTreeM(LineSetM* map, PointSetM* points){
 	int num_point = 0;
 	for (int i = 0; i < map->threadN; ++i){
 		num_point += map->num_points[i];
+		num_point += points->point[i].size();
 	}
 
-	divideH = divideW = sqrt(num_point-2*map->linesNumber())/2;
+	divideH = divideW = sqrt(num_point)/3;
 
 	gridW = (range.maxX - range.minX) / divideW;
 	gridH = (range.maxY - range.minY) / divideH;
@@ -37,7 +38,7 @@ GridTreeM::GridTreeM(LineSetM* map, PointSetM* points){
 		gridM[i] = new vector<Point*>*[divideW];
 
 		for (int j = 0; j < divideW; j++)
-			gridM[i][j] = new vector<Point*>[threadN + 1];
+			gridM[i][j] = new vector<Point*>[threadN];
 	}
 
 	//insert the points
