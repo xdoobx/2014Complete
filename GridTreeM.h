@@ -23,7 +23,7 @@ public:
 
 	//GridTreeM(LineSet* map, PointSet* points); //construct grid index with endpoints and constraint points
 
-	GridTreeM(LineSetM* map, PointSet* points); //construct grid index with endpoints and constraint points
+	GridTreeM(LineSetM* map, PointSetM* points); //construct grid index with endpoints and constraint points
 	inline void insertLines(vector<Line*> lines, int threadId);
 	inline const Point* insertM(Point* point, int tid);
 	virtual inline bool hasPointInTri(const Triangle* triangle);

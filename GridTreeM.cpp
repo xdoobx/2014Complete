@@ -13,8 +13,9 @@ void GridTreeM::insertLines(vector<Line*> lines, int threadId){
 	}
 }
 
-GridTreeM::GridTreeM(LineSetM* map, PointSet* points){
-	range = Rect(map->minx - 0.1, map->maxx + 0.1, map->miny - 0.1, map->maxy + 0.1);
+GridTreeM::GridTreeM(LineSetM* map, PointSetM* points){
+	range = Rect(min(map->minx, points->minX) - 0.1, max(map->maxx, points->maxX) + 0.1,
+		min(map->miny, points->minY) - 0.1, max(map->maxy, points->maxY) + 0.1);
 	threadN = map->threadN;
 	sizes = new int[threadN];
 	int num_point = 0;
@@ -40,8 +41,10 @@ GridTreeM::GridTreeM(LineSetM* map, PointSet* points){
 	}
 
 	//insert the points
-	for (int i = 0; i < points->points.size(); ++i)
-		insertM(points->points[i], 0);
+	for (int i = 0; i < points->threadN; ++i){
+		for (int j = 0; j < points->point[i].size(); ++j)
+			insertM(points->point[i][j], i);
+	}
 
 	//insert the lines in parallel
 	thread* t = new thread[threadN];

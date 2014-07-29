@@ -7,10 +7,9 @@
 class GridSimplifierM{
 protected:
 	GridTreeM* gridIndex; //index all points
-	//LineSet* map; //store lines
 	LineSetM* map; //store lines
 
-	PointSet* points; //store constraint points
+	PointSetM* points; //store constraint points
 	int orig_size; //number of unique points in line set
 	inline bool removeS(Triangle &triangle, int threadId); //simple version of remove point
 	inline bool removeS(Polygon &polygon, int threadId);

@@ -8,7 +8,7 @@ GridSimplifierM::GridSimplifierM(char* lineFile, char* pointFile){
 	//begin = clock();
 	map = readLinesM(lineFile);
 	threadN = map->threadN;
-	points = readPoints(pointFile);
+	points = readPointsM(pointFile);
 	//end = clock();
 	//cout << "IO: " << end - begin << endl;
 
@@ -17,8 +17,6 @@ GridSimplifierM::GridSimplifierM(char* lineFile, char* pointFile){
 	//end = clock();
 	//cout << "index: " << end - begin << endl;
 }
-
-
 
 bool GridSimplifierM::removeS(Triangle &triangle, int threadId){
 	if (!gridIndex->hasPointInTri(&triangle)){
@@ -136,15 +134,15 @@ void GridSimplifierM::simplifyMTP(int limit){
 	for (int i = 0; i < threadN; ++i)
 		poly[i] = Polygon(6, new Point*[6]);
 
-	orig_size = 0;
-	for(int i=0; i<threadN; ++i)
-		orig_size += map->num_points[i];
+	orig_size = gridIndex->pointNumber();
 
 	thread *t = new thread[threadN];
 	for (int i = 0; i < threadN; ++i)
 		t[i] = thread(&GridSimplifierM::simplifyTP, this, map->lines[i], poly[i], i);
 	for (int i = 0; i < threadN; ++i)
 		t[i].join();
+
+	int removed = orig_size - gridIndex->pointNumber();
 }
 
 void GridSimplifierM::wirteFile(string writeFile) {

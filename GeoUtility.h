@@ -23,9 +23,14 @@ struct Point
 	inline bool operator!=(const Point* point) const { return x != point->x || y != point->y; }*/
 };
 
-struct PointSet
+struct PointSetM
 {
-	vector<Point*> points;
+	int threadN = max((int)thread::hardware_concurrency(), 4);
+	vector<Point*>* point = new vector<Point*>[threadN];
+	double* minXs = new double[threadN];
+	double* maxXs = new double[threadN];
+	double* minYs = new double[threadN];
+	double* maxYs = new double[threadN];
 	double minX;
 	double maxX;
 	double minY;
@@ -48,7 +53,7 @@ struct Line
 
 struct LineSetM
 {
-	int threadN = thread::hardware_concurrency();
+	int threadN = max((int)thread::hardware_concurrency(),4);
 	//int threadN = 8;
 	const char* gmlLineString = ":<gml:LineString srsName=\"EPSG:54004\" xmlns:gml=\"http://www.opengis.net/gml\">";
 	const char* gmlCoordinates = "<gml:coordinates decimal=\".\" cs=\",\" ts=\" \">";

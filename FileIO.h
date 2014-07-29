@@ -9,7 +9,8 @@
 #include <limits>
 #include <time.h>
 
-extern PointSet* readPoints(string filename);
+extern void readPointsT(PointSetM* points, char *pData, char *endMark, int threadID);
+extern PointSetM* readPointsM(string filename);
 extern void readLinesT(LineSetM* map, char *pData, char* endMark, int threadID);
 extern LineSetM* readLinesM(string filename);
 

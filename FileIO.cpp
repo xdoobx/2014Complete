@@ -81,11 +81,11 @@ void readLinesT(LineSetM* map, char *pData, char* endMark, int threadID)
 			++strpos;
 			if (map->maxXs[threadID] < point->x)
 				map->maxXs[threadID] = point->x;
-			else if (map->minXs[threadID] > point->x)
+			if (map->minXs[threadID] > point->x)
 				map->minXs[threadID] = point->x;
 			if (map->maxYs[threadID] < point->y)
 				map->maxYs[threadID] = point->y;
-			else if (map->minYs[threadID] > point->y)
+			if (map->minYs[threadID] > point->y)
 				map->minYs[threadID] = point->y;
 			point->pointInd = line->points.size();
 			point->lineInd = map->lines[threadID].size();
@@ -103,15 +103,12 @@ void readLinesT(LineSetM* map, char *pData, char* endMark, int threadID)
 		strpos += 36;
 		map->lines[threadID].push_back(line);
 	}
-
 }
 
 //threadN is the maximal number of threads.
 LineSetM* readLinesM(string filename)
 {
 	ifstream fin(filename, std::ios::binary | std::ios::ate);
-	char* strpos;
-	char* firstp;
 	int length = fin.tellg();
 	length++;
 	char* pdata = new char[length];
@@ -155,27 +152,14 @@ LineSetM* readLinesM(string filename)
 	return map;
 }
 
-PointSet* readPoints(string filename)
+void readPointsT(PointSetM* points, char *pData, char *endMark, int threadID)
 {
-	PointSet* points = new PointSet;
-	ifstream fin(filename, std::ios::binary | std::ios::ate);
-	string filepoint;
-	char* strpos;
-	char* firstp;
+	char* strpos = findStart(pData);
 
-	vector<char> vfile(fin.tellg());
-	fin.seekg(0, ios::beg);
-	fin.read(vfile.data(), vfile.size());
-	vfile.push_back('\0');
-	strpos = vfile.data();
+	points->maxXs[threadID] = points->maxXs[threadID] = -1 << 30;
+	points->minXs[threadID] = points->minYs[threadID] = 1 << 30;
 
-	parseLong(strpos, &firstp);
-	firstp += 115;
-	points->maxX = points->minX = parseDouble(firstp, &firstp);
-	points->maxY = points->minY = parseDouble(++firstp, &firstp);
-
-	clock_t begin = clock();
-	while (strpos[0] != '\0'){
+	while (strpos < endMark){
 		Point* point = new Point;
 		parseLong(strpos, &strpos);
 		strpos += 115;
@@ -185,19 +169,63 @@ PointSet* readPoints(string filename)
 		point->y = parseDouble(strpos, &strpos);
 		++strpos;
 
-		if (points->maxX < point->x)
-			points->maxX = point->x;
-		else if (points->minX > point->x)
-			points->minX = point->x;
-		if (points->maxY < point->y)
-			points->maxY = point->y;
-		else if (points->minY > point->y)
-			points->minY = point->y;
+		if (points->maxXs[threadID] < point->x)
+			points->maxXs[threadID] = point->x;
+		if (points->minXs[threadID] > point->x)
+			points->minXs[threadID] = point->x;
+		if (points->maxYs[threadID] < point->y)
+			points->maxYs[threadID] = point->y;
+		if (points->minYs[threadID] > point->y)
+			points->minYs[threadID] = point->y;
 
 		strpos += 31;
-		points->points.push_back(point);
+		points->point[threadID].push_back(point);
 	}
-	cout << "construct points cost: " << clock() - begin << endl;
+}
+
+PointSetM* readPointsM(string filename)
+{
+	PointSetM* points = new PointSetM;
+	ifstream fin(filename, std::ios::binary | std::ios::ate);
+
+	int length = fin.tellg();
+	length++;
+	char* pdata = new char[length];
+	fin.seekg(0, ios::beg);
+	fin.read(pdata, length);
+	pdata[length - 1] = '\0';
+	fin.close();
+
+	int threadN = points->threadN;
+
+	int quaterLen = length / threadN;
+
+	thread* t = new thread[threadN];
+	for (int i = 0; i < threadN - 1; ++i)
+		t[i] = thread(readPointsT, points, pdata + i * quaterLen, pdata + (i + 1) * quaterLen, i);
+	t[threadN - 1] = thread(readPointsT, points, pdata + (threadN - 1) * quaterLen, pdata + length - 1, threadN - 1);
+	for (int i = 0; i < threadN; ++i)
+		t[i].join();
+
+	for (int i = threadN - 1; i > 0; --i){
+		if (*points->point[i][0] == points->point[i - 1][0])
+			points->point[i].clear();
+	}
+
+	points->minX = points->minXs[0];
+	points->maxX = points->maxXs[0];
+	points->minY = points->minYs[0];
+	points->maxY = points->maxYs[0];
+
+	for (int i = 1; i < threadN; i++)
+	{
+		points->minX = (points->minXs[i] < points->minX) ? points->minXs[i] : points->minX;
+		points->maxX = (points->maxXs[i] > points->maxX) ? points->maxXs[i] : points->maxX;
+
+		points->minY = (points->minYs[i] < points->minY) ? points->minYs[i] : points->minY;
+		points->maxY = (points->maxYs[i] > points->maxY) ? points->maxYs[i] : points->maxY;
+	}
+
 	return points;
 }
 
