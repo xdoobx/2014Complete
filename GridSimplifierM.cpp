@@ -73,10 +73,9 @@ void GridSimplifierM::removeS(Polygon &poly, vector<Point*>& p, int threadId){
 	}
 }
 
-void GridSimplifierM::simplifyTP(vector<Line*> lines, Polygon& poly, int threadId){
+void GridSimplifierM::simplifyTP(vector<Line*> &lines, Polygon& poly, int threadId){
 	Triangle tri;
 	for (int i = 0; i<lines.size(); ++i){
-		
 		if (lines[i]->cycle){
 			for (int j = 1; j <= (int)(lines[i]->points.size() - 4) / 4; ++j){
 				poly.p[1] = lines[i]->points[j * 4 - 3];
@@ -86,11 +85,12 @@ void GridSimplifierM::simplifyTP(vector<Line*> lines, Polygon& poly, int threadI
 				poly.p[0] = lines[i]->points[poly.p[1]->leftInd];
 				poly.p[5] = lines[i]->points[poly.p[4]->rightInd];
 				poly.getRange();
-
 				removeS(poly, threadId);
 			}
 			int rest = lines[i]->kept;
-			for (int j = 0; j < min(5, rest - 4); ++j){
+			int togo = lines[i]->points.size() % 4 + 4;
+			int left_count = togo < rest - 4 ? togo : rest - 4;
+			for (int j = 0; j < left_count; ++j){
 				tri.p[1] = lines[i]->points[lines[i]->points.size() - j - 2];
 				tri.p[0] = lines[i]->points[tri.p[1]->leftInd];
 				tri.p[2] = lines[i]->points[tri.p[1]->rightInd];
@@ -143,6 +143,58 @@ void GridSimplifierM::simplifyMTP(int limit){
 		t[i].join();
 
 	int removed = orig_size - gridIndex->pointNumber();
+	if (removed < limit){
+		Triangle* tri = new Triangle[threadN];
+		while (removed < limit && removed != 0){
+			orig_size = gridIndex->pointNumber();
+			for (int i = 0; i < threadN; ++i)
+				t[i] = thread(&GridSimplifierM::simplifyT, this, map->lines[i], tri[i], i);
+			for (int i = 0; i < threadN; ++i)
+				t[i].join();
+			removed = orig_size - gridIndex->pointNumber();
+		}
+	}
+}
+void GridSimplifierM::simplifyT(vector<Line*> &lines, Triangle& tri, int threadId){
+	for (int i = 0; i<lines.size(); ++i){
+		if (lines[i]->cycle){
+			tri.p[0] = lines[i]->points[0];
+			while (lines[i]->kept > 4 && tri.p[0]->rightInd != lines[i]->points.size() - 1){
+				tri.p[1] = lines[i]->points[tri.p[0]->rightInd];
+				tri.p[2] = lines[i]->points[tri.p[1]->rightInd];
+				tri.sort();
+				removeS(tri, threadId);
+				tri.p[0] = lines[i]->points[tri.p[0]->rightInd];
+			}
+			int rest = lines[i]->kept;
+			int left_count = 2 < rest - 4 ? 2 : rest - 4;
+			tri.p[2] = lines[i]->points[lines[i]->points.size() - 1];
+			for (int j = 0; j < left_count; ++j){
+				tri.p[1] = lines[i]->points[tri.p[2]->leftInd];
+				tri.p[0] = lines[i]->points[tri.p[1]->leftInd];
+				tri.sort();
+				removeS(tri, threadId);
+				tri.p[2] = lines[i]->points[tri.p[2]->leftInd];
+			}
+		}
+		else{
+			tri.p[0] = lines[i]->points[0];
+			while (lines[i]->kept > 3 && tri.p[0]->rightInd != lines[i]->points.size() - 1){
+				tri.p[1] = lines[i]->points[tri.p[0]->rightInd];
+				tri.p[2] = lines[i]->points[tri.p[1]->rightInd];
+				tri.sort();
+				removeS(tri, threadId);
+				tri.p[0] = lines[i]->points[tri.p[0]->rightInd];
+			}
+			if (lines[i]->kept > 3 || (lines[i]->share == false && lines[i]->kept > 2)){
+				tri.p[2] = lines[i]->points[lines[i]->points.size() - 1];
+				tri.p[1] = lines[i]->points[tri.p[2]->leftInd];
+				tri.p[0] = lines[i]->points[tri.p[1]->leftInd];
+				tri.sort();
+				removeS(tri, threadId);
+			}
+		}
+	}
 }
 
 void GridSimplifierM::wirteFile(string writeFile) {

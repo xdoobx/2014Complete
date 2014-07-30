@@ -82,7 +82,6 @@ GridTreeM::GridTreeM(LineSetM* map, PointSetM* points){
 const Point* GridTreeM::insertM(Point* newPoint,int tid){
 	int gridX = (newPoint->x - range.minX) / gridW;
 	int gridY = (newPoint->y - range.minY) / gridH;
-	//gridM[gridX][gridY][tid].push_back(newPoint); // even though this point overlays a previous point
 	gridM[gridX][gridY][tid].push_back(newPoint); // even though this point overlays a previous point
 	++sizes[tid];
 	return newPoint;
@@ -95,16 +94,13 @@ bool GridTreeM::hasPointInTri(const Triangle* triangle){
 	int gridMaxY = (triangle->maxY - range.minY) / gridH;
 	for (int i = gridMinX; i <= gridMaxX; ++i){
 		for (int j = gridMinY; j <= gridMaxY; ++j){
-
-			//int vecN = threadN + 1;
-			int vecN = threadN;
-			for (int l = 0; l < vecN; l++)
-			for (int k = 0; k < gridM[i][j][l].size(); ++k)
-			{
-				if (gridM[i][j][l][k]->kept && triangle->isInTri(gridM[i][j][l][k]->x, gridM[i][j][l][k]->y))
-					return true;
+			for (int l = 0; l < threadN; l++){
+				for (int k = 0; k < gridM[i][j][l].size(); ++k)
+				{
+					if (gridM[i][j][l][k]->kept && triangle->isInTri(gridM[i][j][l][k]->x, gridM[i][j][l][k]->y))
+						return true;
+				}
 			}
-
 		}
 	}
 	return false;
@@ -117,16 +113,13 @@ bool GridTreeM::hasPointInPoly(const Polygon* polygon){
 	int gridMaxY = (polygon->maxY - range.minY) / gridH;
 	for (int i = gridMinX; i <= gridMaxX; ++i){
 		for (int j = gridMinY; j <= gridMaxY; ++j){
-
-			//int vecN = threadN + 1;
-			int vecN = threadN;
-			for (int l = 0; l < vecN; l++)
-			for (int k = 0; k < gridM[i][j][l].size(); ++k)
-			{
-				if (gridM[i][j][l][k]->kept && polygon->isInPolygon(gridM[i][j][l][k]->x, gridM[i][j][l][k]->y))
-					return true;
+			for (int l = 0; l < threadN; l++){
+				for (int k = 0; k < gridM[i][j][l].size(); ++k)
+				{
+					if (gridM[i][j][l][k]->kept && polygon->isInPolygon(gridM[i][j][l][k]->x, gridM[i][j][l][k]->y))
+						return true;
+				}
 			}
-
 		}
 	}
 	return false;
@@ -139,14 +132,12 @@ void GridTreeM::PointsInPoly(const Polygon* polygon, vector<Point*>& p){
 	int gridMaxY = (polygon->maxY - range.minY) / gridH;
 	for (int i = gridMinX; i <= gridMaxX; ++i){
 		for (int j = gridMinY; j <= gridMaxY; ++j){
-
-			//int vecN = threadN + 1;
-			int vecN = threadN;
-			for (int l = 0; l < vecN; l++)
-			for (int k = 0; k < gridM[i][j][l].size(); ++k)
-			{
-				if (gridM[i][j][l][k]->kept && polygon->isInPolygon(gridM[i][j][l][k]->x, gridM[i][j][l][k]->y))
-					p.push_back(gridM[i][j][l][k]);
+			for (int l = 0; l < threadN; l++){
+				for (int k = 0; k < gridM[i][j][l].size(); ++k)
+				{
+					if (gridM[i][j][l][k]->kept && polygon->isInPolygon(gridM[i][j][l][k]->x, gridM[i][j][l][k]->y))
+						p.push_back(gridM[i][j][l][k]);
+				}
 			}
 		}
 	}

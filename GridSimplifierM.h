@@ -18,10 +18,10 @@ protected:
 	int threadN;//the maximal number of thread, should automatically set this number;
 public:
 	GridSimplifierM(char* lineFile, char* pointFile);
-	//void simplify(int limit); // use single processor
-	//void simplifyT(int xl, int xr, int yl, int yr, const Rect& rect, Triangle& tri); // in each thread
 
-	void simplifyTP(vector<Line*> lines, Polygon& poly, int threadId);
+	void simplifyT(vector<Line*> &lines, Triangle& tri, int threadId);
+
+	void simplifyTP(vector<Line*> &lines, Polygon& poly, int threadId);
 
 	void simplifyMTP(int limit);
 	void wirteFile(string writeFile);

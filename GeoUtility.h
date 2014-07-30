@@ -179,8 +179,6 @@ struct Triangle
 	//whether a point is in this triangle
 	inline bool isInTri(const double& x, const double& y) const {
 
-		//if (x > maxX || x<minX || y>maxY || y<minY)
-		//	return false;
 		
 		double prod1 = (x - p[1]->x)*(p[0]->y - y) - (x - p[0]->x)*(p[1]->y - y);
 		double prod2 = (x - p[2]->x)*(p[0]->y - y) - (x - p[0]->x)*(p[2]->y - y);
