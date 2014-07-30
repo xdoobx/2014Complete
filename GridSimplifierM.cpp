@@ -154,6 +154,22 @@ void GridSimplifierM::simplifyMTP(int limit){
 			removed = orig_size - gridIndex->pointNumber();
 		}
 	}
+	/*Triangle* tri = new Triangle[threadN];
+	thread *t = new thread[threadN];
+	orig_size = gridIndex->pointNumber();
+	for (int i = 0; i < threadN; ++i)
+		t[i] = thread(&GridSimplifierM::simplifyT, this, map->lines[i], tri[i], i);
+	for (int i = 0; i < threadN; ++i)
+		t[i].join();
+	int removed = orig_size - gridIndex->pointNumber();
+	while (removed < limit && removed != 0){
+		orig_size = gridIndex->pointNumber();
+		for (int i = 0; i < threadN; ++i)
+			t[i] = thread(&GridSimplifierM::simplifyT, this, map->lines[i], tri[i], i);
+		for (int i = 0; i < threadN; ++i)
+			t[i].join();
+		removed = orig_size - gridIndex->pointNumber();
+	}*/
 }
 void GridSimplifierM::simplifyT(vector<Line*> &lines, Triangle& tri, int threadId){
 	for (int i = 0; i<lines.size(); ++i){
@@ -163,8 +179,8 @@ void GridSimplifierM::simplifyT(vector<Line*> &lines, Triangle& tri, int threadI
 				tri.p[1] = lines[i]->points[tri.p[0]->rightInd];
 				tri.p[2] = lines[i]->points[tri.p[1]->rightInd];
 				tri.sort();
-				removeS(tri, threadId);
-				tri.p[0] = lines[i]->points[tri.p[0]->rightInd];
+				if(!removeS(tri, threadId))
+					tri.p[0] = lines[i]->points[tri.p[0]->rightInd];
 			}
 			int rest = lines[i]->kept;
 			int left_count = 2 < rest - 4 ? 2 : rest - 4;
@@ -173,8 +189,8 @@ void GridSimplifierM::simplifyT(vector<Line*> &lines, Triangle& tri, int threadI
 				tri.p[1] = lines[i]->points[tri.p[2]->leftInd];
 				tri.p[0] = lines[i]->points[tri.p[1]->leftInd];
 				tri.sort();
-				removeS(tri, threadId);
-				tri.p[2] = lines[i]->points[tri.p[2]->leftInd];
+				if(!removeS(tri, threadId))
+					tri.p[2] = lines[i]->points[tri.p[2]->leftInd];
 			}
 		}
 		else{
@@ -183,8 +199,8 @@ void GridSimplifierM::simplifyT(vector<Line*> &lines, Triangle& tri, int threadI
 				tri.p[1] = lines[i]->points[tri.p[0]->rightInd];
 				tri.p[2] = lines[i]->points[tri.p[1]->rightInd];
 				tri.sort();
-				removeS(tri, threadId);
-				tri.p[0] = lines[i]->points[tri.p[0]->rightInd];
+				if(!removeS(tri, threadId))
+					tri.p[0] = lines[i]->points[tri.p[0]->rightInd];
 			}
 			if (lines[i]->kept > 3 || (lines[i]->share == false && lines[i]->kept > 2)){
 				tri.p[2] = lines[i]->points[lines[i]->points.size() - 1];
