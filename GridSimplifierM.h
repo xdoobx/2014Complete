@@ -13,7 +13,6 @@ protected:
 	int orig_size; //number of unique points in line set
 	inline bool removeS(Triangle &triangle, int threadId); //simple version of remove point
 	inline bool removeS(Polygon &polygon, int threadId);
-	inline void removeS(Polygon &polygon, vector<Point*>& p, int threadId);
 
 	int threadN;//the maximal number of thread, should automatically set this number;
 public:

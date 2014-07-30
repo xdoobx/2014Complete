@@ -17,10 +17,10 @@ struct Point
 	int rightInd = -1;
 	Point(){}
 	Point(double X, double Y) :x(X), y(Y){}
-	inline bool operator==(const Point* point) const { return abs(x - point->x) < 0.001 && abs(y - point->y) < 0.001; }
-	inline bool operator!=(const Point* point) const { return abs(x - point->x) >= 0.001 || abs(y - point->y) >= 0.001; }
-	/*inline bool operator==(const Point* point) const { return x == point->x && y == point->y; }
-	inline bool operator!=(const Point* point) const { return x != point->x || y != point->y; }*/
+	/*inline bool operator==(const Point* point) const { return abs(x - point->x) < 0.001 && abs(y - point->y) < 0.001; }
+	inline bool operator!=(const Point* point) const { return abs(x - point->x) >= 0.001 || abs(y - point->y) >= 0.001; }*/
+	inline bool operator==(const Point* point) const { return x == point->x && y == point->y; }
+	inline bool operator!=(const Point* point) const { return x != point->x || y != point->y; }
 };
 
 struct PointSetM
@@ -35,10 +35,6 @@ struct PointSetM
 	double maxX;
 	double minY;
 	double maxY;
-	/*~PointSet(){
-		for (unsigned int i = 0; i < points.size(); ++i)
-			delete points[i];
-	}*/
 };
 
 struct Line
@@ -47,14 +43,12 @@ struct Line
 	int kept = 0;
 	bool cycle;
 	bool share;
-	//concurrency::concurrent_vector<Point*> points;
 	vector<Point*> points;
 };
 
 struct LineSetM
 {
 	int threadN = max((int)thread::hardware_concurrency(),4);
-	//int threadN = 8;
 	const char* gmlLineString = ":<gml:LineString srsName=\"EPSG:54004\" xmlns:gml=\"http://www.opengis.net/gml\">";
 	const char* gmlCoordinates = "<gml:coordinates decimal=\".\" cs=\",\" ts=\" \">";
 	const char* endCoordinates = "</gml:coordinates>";

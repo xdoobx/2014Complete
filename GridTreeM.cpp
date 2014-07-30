@@ -18,7 +18,7 @@ GridTreeM::GridTreeM(LineSetM* map, PointSetM* points){
 		min(map->miny, points->minY) - 0.1, max(map->maxy, points->maxY) + 0.1);
 	threadN = map->threadN;
 	sizes = new int[threadN];
-	int num_point = 0;
+	num_point = 0;
 	for (int i = 0; i < map->threadN; ++i){
 		num_point += map->num_points[i];
 		num_point += points->point[i].size();

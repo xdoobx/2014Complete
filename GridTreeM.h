@@ -8,7 +8,7 @@ class GridTreeM{
 private:
 public:
 	Rect range; //range of current branch node
-	//int size; // number of points under the node
+	int num_point; // number of points under the node
 	int divideW;
 	double gridW;
 	int divideH;

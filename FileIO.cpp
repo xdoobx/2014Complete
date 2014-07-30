@@ -41,10 +41,13 @@ long parseLong(char* p, char** pos){
 char* findStart(char* p)
 {
 	//stop at the ":<"
-	while (*p != ':' || (*(p + 1) != '<'))
+	while ((*p != ':' || *(p + 1) != '<') && *p != '\0')
 	{
 		p++;
 	}
+
+	if (*p == '\0')
+		return NULL;
 
 	p--;//reverse from : to a digit
 
@@ -68,6 +71,9 @@ void readLinesT(LineSetM* map, char *pData, char* endMark, int threadID)
 	map->minXs[threadID] = map->minYs[threadID] = 1 << 30;
 
 	map->num_points[threadID] = 0;
+
+	if (strpos == NULL)
+		return;
 
 	while (strpos < endMark){
 		Line* line = new Line;
@@ -131,7 +137,7 @@ LineSetM* readLinesM(string filename)
 		t[i].join();
 
 	for (int i = threadN - 1; i > 0; --i){
-		if (map->lines[i][0]->id == map->lines[i - 1][0]->id)
+		if (map->lines[i].size() != 0 && map->lines[i-1].size() != 0 && map->lines[i][0]->id == map->lines[i - 1][0]->id)
 			map->lines[i].clear();
 	}
 
@@ -158,6 +164,9 @@ void readPointsT(PointSetM* points, char *pData, char *endMark, int threadID)
 
 	points->maxXs[threadID] = points->maxXs[threadID] = -1 << 30;
 	points->minXs[threadID] = points->minYs[threadID] = 1 << 30;
+
+	if (strpos == NULL)
+		return;
 
 	while (strpos < endMark){
 		Point* point = new Point;
@@ -208,7 +217,7 @@ PointSetM* readPointsM(string filename)
 		t[i].join();
 
 	for (int i = threadN - 1; i > 0; --i){
-		if (*points->point[i][0] == points->point[i - 1][0])
+		if (points->point[i].size() != 0 && points->point[i-1].size() != 0 && * points->point[i][0] == points->point[i - 1][0])
 			points->point[i].clear();
 	}
 
@@ -258,10 +267,8 @@ void combine(char* output, int& pos, double number, char sep){
 		output[pos++] = sep;
 		return;
 	}
-	while (number / p < 1)
+	while (number / p < 1 && p > 1)
 		p /= 10;
-	if (p < 1)
-		output[pos++] = '0';
 	while (p >= 1){
 		digit = (int)(number / p);
 		output[pos++] = char(digit + '0');
@@ -269,8 +276,6 @@ void combine(char* output, int& pos, double number, char sep){
 		p /= 10;
 	}
 	output[pos++] = '.';
-	if (p < 0.0001)
-		output[pos++] = '0';
 	while (p >= 0.0001){
 		digit = (int)(number / p);
 		output[pos++] = char(digit + '0');
