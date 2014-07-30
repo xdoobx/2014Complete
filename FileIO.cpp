@@ -260,6 +260,8 @@ void combine(char* output, int& pos, double number, char sep){
 	}
 	while (number / p < 1)
 		p /= 10;
+	if (p < 1)
+		output[pos++] = '0';
 	while (p >= 1){
 		digit = (int)(number / p);
 		output[pos++] = char(digit + '0');
@@ -267,6 +269,8 @@ void combine(char* output, int& pos, double number, char sep){
 		p /= 10;
 	}
 	output[pos++] = '.';
+	if (p < 0.0001)
+		output[pos++] = '0';
 	while (p >= 0.0001){
 		digit = (int)(number / p);
 		output[pos++] = char(digit + '0');
