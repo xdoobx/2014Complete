@@ -27,11 +27,10 @@ double parseDouble(char* p, char** pos)
 
 	if (*p == 'E' || *p == 'e'){
 		double exp = 0;
-		double k = 1;
 		p++;
 		while (*p >= '0' && *p <= '9'){
-			exp += (*p++ - '0') * k;
-			k *= 10;
+			exp *= 10;
+			exp += *p++ - '0';
 		}
 		acc *= pow(10, exp);
 	}
