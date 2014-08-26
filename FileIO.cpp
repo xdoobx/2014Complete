@@ -24,6 +24,17 @@ double parseDouble(char* p, char** pos)
 			k *= 0.1;
 		}
 	}
+
+	if (*p == 'E' || *p == 'e'){
+		double exp = 0;
+		double k = 1;
+		p++;
+		while (*p >= '0' && *p <= '9'){
+			exp += (*p++ - '0') * k;
+			k *= 10;
+		}
+		acc *= pow(10, exp);
+	}
 	*pos = p;
 	return s * acc;
 }
